@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frostfall: Skyrim SE Roleplay</title>
+    <meta
+      name="description"
+      content="Frostfall: Skyrim SE Roleplay is an open-source SkyMP server set in 4E 191, ten years before the events of Skyrim. Built for long-time TES fans who want to carve a storyline out of a living world."
+    />
+    <link rel="canonical" href="https://frostfall.online/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Frostfall: Skyrim SE Roleplay" />
+    <meta property="og:title" content="Frostfall: Skyrim SE Roleplay" />
+    <meta
+      property="og:description"
+      content="An open-source SkyMP server set in 4E 191. Ten years before Skyrim. Built for long-time TES fans."
+    />
+    <meta property="og:image" content="https://frostfall.online/assets/logo-static.jpg" />
+    <meta property="og:url" content="https://frostfall.online/" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Frostfall: Skyrim SE Roleplay" />
+    <meta
+      name="twitter:description"
+      content="An open-source SkyMP roleplay server set in 4E 191."
+    />
+    <meta name="twitter:image" content="https://frostfall.online/assets/logo-static.jpg" />
+
+    <link rel="icon" href="assets/logo-static.jpg" />
+
+    <!-- Display + caps + mono fonts from Google; body font (Cyrodiil) self-hosted in styles.css -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ================================================ -->
+    <!-- TOP BAR                                          -->
+    <!-- ================================================ -->
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a href="#" class="brand-mark" aria-label="Frostfall home">
+          <img
+            class="brand-mark-seal"
+            src="assets/logo-animated.gif"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Frostfall</span>
+        </a>
+        <nav aria-label="Primary">
+          <ul class="nav-links">
+            <li><a href="#what">What this is</a></li>
+            <li><a href="#vision">Vision</a></li>
+            <li><a href="#economy">Economy</a></li>
+            <li><a href="#lore">Lore</a></li>
+            <li><a href="#codebase">Code</a></li>
+            <li>
+              <a
+                class="nav-link-accent"
+                href="https://discord.gg/4KHMqUUKNT"
+                target="_blank"
+                rel="noopener"
+                >Discord</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <button
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label="Switch to light mode"
+          type="button"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================================================ -->
+      <!-- IDENTITY — logo + wordmark                       -->
+      <!-- ================================================ -->
+      <section class="identity container-narrow">
+        <div class="identity-seal">
+          <img
+            class="identity-seal-img"
+            src="assets/logo-animated.gif"
+            alt="Frostfall server seal"
+          />
+        </div>
+        <h1 class="wordmark">
+          <span class="wordmark-main metallic">Frostfall</span>
+          <span class="wordmark-sub metallic">Skyrim SE Roleplay</span>
+        </h1>
+        <div class="subtitle">Skyrim SE · SkyMP · Open Source</div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- WHAT THIS IS                                     -->
+      <!-- ================================================ -->
+      <section id="what" class="intro">
+        <div class="container-default">
+          <div class="intro-eyebrow">
+            <div class="rule" aria-hidden="true">
+              <span class="rule-glyph metallic">✦</span>
+            </div>
+            <div class="eyebrow metallic">what this is</div>
+          </div>
+          <h2>
+            A persistent Elder Scrolls V roleplay server, built on SkyMP and
+            kept wholly open source.
+          </h2>
+
+          <div class="intro-prose">
+            <p>
+              Frostfall is a narrative multiplayer server for Skyrim Special
+              Edition, running on the
+              <a href="https://github.com/skyrim-multiplayer/skymp" target="_blank" rel="noopener">SkyMP</a>
+              framework. Every system we write (economy, politics, justice,
+              crafting) ships publicly on
+              <a
+                href="https://github.com/F02K/Frostfall-Server"
+                target="_blank"
+                rel="noopener"
+                >GitHub</a
+              >
+              as we build it. The code is open, the commits are live, and
+              anyone who wants to see how a world runs can read it directly.
+            </p>
+            <p>
+              It is built for the players <strong>Bethesda left behind</strong>:
+              the ones who remember when worldbuilding had weight, when factions
+              had consequence, when the world felt tactile. The main quest, the
+              Dragonborn, the prophecy all belong to a different decade.
+              <em
+                >Player stories fill that space, and the staff seed the world
+                rather than run it.</em
+              >
+            </p>
+            <p>
+              We are standing up a living Skyrim, in the decade before the one
+              you know, and giving it back to the people who fell in love with
+              Tamriel the first time. The mods we lean on, the servers we fork,
+              the systems we invent all ship freely, because that is how this
+              province was built to begin with.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- HERO — Talos statue                              -->
+      <!-- ================================================ -->
+      <section class="hero" aria-labelledby="hero-caption">
+        <figure class="hero-frame">
+          <img
+            class="hero-img"
+            src="assets/hero-knight.gif"
+            alt="An armoured knight stands vigil beneath a blood-red moon over a Skyrim castle."
+            loading="eager"
+          />
+          <figcaption class="hero-caption">
+            <blockquote class="hero-quote" id="hero-caption">
+              The ink is sixteen years dry.<br />
+              The argument is still wet.
+              <cite>4E 191, Skyrim, under the White-Gold Concordat</cite>
+            </blockquote>
+          </figcaption>
+        </figure>
+
+        <div class="hero-cta-row">
+          <a
+            href="https://discord.gg/4KHMqUUKNT"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener"
+            >Join the Discord</a
+          >
+          <a
+            href="https://github.com/F02K/Frostfall-Server"
+            class="btn btn-ghost"
+            target="_blank"
+            rel="noopener"
+            >Read the code</a
+          >
+        </div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- VISION — Whiterun overhead divider               -->
+      <!-- ================================================ -->
+      <section id="vision" class="vision">
+        <div class="vision-divider" aria-hidden="true">
+          <div class="vision-medallion">
+            <img
+              src="assets/whiterun-overhead.gif"
+              alt=""
+              loading="lazy"
+            />
+          </div>
+        </div>
+
+        <div class="container">
+          <div class="vision-eyebrow">
+            <div class="rule" aria-hidden="true">
+              <span class="rule-glyph metallic">✦</span>
+            </div>
+            <div class="eyebrow metallic">our vision</div>
+          </div>
+          <h2>
+            A world <em>players</em> run, and a codebase anyone can inherit.
+          </h2>
+
+          <div class="vision-grid">
+            <article class="vision-pillar">
+              <h3>Staff seed. Players govern.</h3>
+              <p>
+                Every Jarl, every Steward, every faction head is a vetted
+                player. Staff plant the first Jarls and the first leaders of
+                the Legion, the Thalmor, the College. Everything beneath that
+                propagates through fiction. Enforcement happens in-character
+                first: the Thalmor curbs the College, a Jarl corrects their
+                guard, a rival merchant undercuts a price. In-world power
+                takes precedence over out-of-character moderation wherever
+                possible.
+              </p>
+            </article>
+            <article class="vision-pillar">
+              <h3>Real stakes, real theatre.</h3>
+              <p>
+                The world keeps score. A Downed character is incapacitated and
+                can recover. Captivity has a twenty-four-hour ceiling.
+                Bounties are per-hold and persistent. A Jarl's record on you
+                is a record you carry. The systems exist to texture story, and
+                the consequences of your choices outlive the session you made
+                them in.
+              </p>
+            </article>
+            <article class="vision-pillar">
+              <h3>Open source, in public.</h3>
+              <p>
+                The gamemode is written in TypeScript on the
+                <a
+                  href="https://github.com/F02K/Frostfall-Server"
+                  target="_blank"
+                  rel="noopener"
+                  >Frostfall-Server</a
+                >
+                fork of SkyMP, and every commit lands on GitHub as we make it.
+                Fifteen systems, 415 passing tests, plan documents and
+                changelogs written in the open. If you want to contribute, or
+                stand up your own server on top of ours, the door is open.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- ECONOMY & POLITICS                              -->
+      <!-- ================================================ -->
+      <section id="economy" class="economy">
+        <div class="container-default economy-inner">
+          <div class="economy-content">
+            <div class="economy-eyebrow">
+              <div class="rule" aria-hidden="true">
+                <span class="rule-glyph metallic">✦</span>
+              </div>
+              <div class="eyebrow metallic">gold, power, and consequence</div>
+            </div>
+            <h2>Every hold has leverage.<br />Every transaction has politics.</h2>
+
+            <div class="economy-grid">
+              <article class="economy-card">
+                <h3>Nine treasuries. Nine economies.</h3>
+                <p>
+                  Each hold controls an independent treasury that funds guards,
+                  clears bounties, and bankrolls faction activity. A Jarl who
+                  lets their coffers run dry has already begun to lose.
+                </p>
+              </article>
+              <article class="economy-card">
+                <h3>Trade routes are power.</h3>
+                <p>
+                  Whiterun's plains feed the province. The Reach yields silver.
+                  Haafingar commands the ports. Control the roads between them,
+                  and you might get rich. Or, you might get arrested; either's possible.
+                </p>
+              </article>
+              <article class="economy-card">
+                <h3>Skills and experience.</h3>
+                <p>
+                  The more you do, the better you get. Study at the College,
+                  train under a master, work a forge. Skills are capped by your
+                  faction rank and raised by putting in the hours. Nobody starts
+                  an expert, and nobody stays a novice who actually shows up.
+                </p>
+              </article>
+            </div>
+          </div>
+
+          <div class="economy-media">
+            <img
+              src="assets/economy-whiterun.gif"
+              alt=""
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- LORE — accordion                                 -->
+      <!-- ================================================ -->
+      <section id="lore" class="lore">
+        <div class="container-default">
+          <div class="lore-head">
+            <div class="eyebrow metallic">the world, in seven pieces</div>
+            <div class="rule" aria-hidden="true">
+              <span class="rule-glyph metallic">✦</span>
+            </div>
+            <h2>The province in 4E&nbsp;191</h2>
+            <p>
+              Written in-world. Treat anything here as rumour, hearsay, or
+              common knowledge you might have overheard on the road.
+            </p>
+          </div>
+
+          <div class="lore-accordion">
+            <details class="lore-entry" open>
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">I</span>
+                <span class="lore-entry-title">The White-Gold Concordat: A Betrayal of Skyrim</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>The Great War ended in 4E 175. The Empire agreed to ban the worship of Talos across all its provinces. In Skyrim, the office of High Kingship was dissolved. The Jarls now answer to Imperial authority directly, with no native head of state to buffer them.</p>
+                <p>The year is 4E 191. The soldiers who bled at the Red Ring came home to find their patron god illegal and their King's law abolished by the stroke of a pen. The Empire will tell you it had no choice. The ink is sixteen years dry. But the argument is not.</p>
+              </div>
+            </details>
+
+            <details class="lore-entry">
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">II</span>
+                <span class="lore-entry-title">The Cloak, The Prisoner, and The Trial</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>Ask ten Nords about Ulfric Stormcloak and you will get ten different answers. Some say he is the last true Voice of Skyrim, a man who trained his voice like a weapon and refused to let the Concordat stand unopposed. Others say he is a fool and a dead man. Defying the Aldmeri would have gotten thousands killed for a war nobody could win.</p>
+                <p>It is the month of Frostfall. He is a prisoner in an Imperial cell, waiting for a fate nobody but the Emperor will decide. The question of what happens to him is the only thing keeping Eastmarch and Windhelm from open rebellion. If he's tried and executed, Skyrim's Sons have a martyr. The Nine Holds hold their collective breath.</p>
+              </div>
+            </details>
+
+            <details class="lore-entry">
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">III</span>
+                <span class="lore-entry-title">The Imperial Garrison: Veterans of Foreign Wars</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>The soldiers garrisoning Skyrim in 4E 191 are not the Fourth Legion, coming decades later, with Tullius. These men came home from the Great War to a disbanded High King and a province that does not entirely want them here, enforcing a Concordat most of them find as distasteful as the Nords do.</p>
+                <p>They do not enforce the Talos ban. Not actively. They look the other way, and the Thalmor know it. Nobody says anything about it, because the alternative is a question that many find impossible: when the swords get drawn, do you pick your God, your Homeland, or your Empire? Ask them why they stay. I believe it's a question worth asking any that you meet.</p>
+              </div>
+            </details>
+
+            <details class="lore-entry">
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">IV</span>
+                <span class="lore-entry-title">The Thalmor: A Shadow on the Sky</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>The Thalmor have yet to set foot in Skyrim. But that's all about to change. The Emperor is aging, his heir not apparent. His only relative is his cousin, the lady Vici. Neither have been seen in a month.</p>
+                <p>Their longest ambition is the restoration of Elvish supremacy across Tamriel. They believe the Empire is a structure that has already failed. Their work is to ensure that when it collapses, the Dominion fills the space it leaves. Every shrine burned is a log on the Empire's funeral pyre. A province full of people who hate their Empire is a province that will not rally to defend it. They are a dagger, held beneath the negotiating table. And they have the Jarl of Eastmarch upon the face of it.</p>
+              </div>
+            </details>
+
+            <details class="lore-entry">
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">V</span>
+                <span class="lore-entry-title">The College of Winterhold: Magic and Misunderstanding</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>69 years ago, disaster struck the face of Winterhold off the side of a cliff, and it tumbled into the Sea of Ghosts. The College still stands. The shell of the city beneath it still blames it for the Collapse.</p>
+                <p>Under the Concordat, the Dominion has a particular interest in controlling who practices magic. The College has received no end of threats, blackmail, and legal orders to quarter a Justiciar. They have, heretofore, refused. But this is growing harder each passing day. The Thalmor's Ambassador is coming. Whether the College survives the next years with its independence intact is a question its enemies, faculty, patron, and students will all come to decide.</p>
+              </div>
+            </details>
+
+            <details class="lore-entry">
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">VI</span>
+                <span class="lore-entry-title">The Eight Divines and The Man</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>Eight Divines are openly recognized across the Empire. The Ninth is Talos, once called Tiber Septim, raised to godhood upon his death. Praying at one of his altars is now met with a noose. The Dominion denies his divinity ever existed. To them, he was a man, a conqueror, a dangerous delusion.</p>
+                <p>To a Nord, he is the God who sat Shor's empty throne and proved that men could rise above their station. The altar in the temples of the Eight Divines lays empty. But the Temple of Talos in Windhelm has not officially closed. The Thalmor are watching. The Garrison holds them back, if only tentatively.</p>
+              </div>
+            </details>
+
+            <details class="lore-entry">
+              <summary class="lore-entry-head">
+                <span class="lore-numeral" aria-hidden="true">VII</span>
+                <span class="lore-entry-title">The Holds</span>
+                <svg class="lore-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="lore-entry-body">
+                <p>
+                  Nine holds, nine seats of power, nine unique resources. Every
+                  Jarl and every Steward is an original character held by a
+                  vetted player. From Haafingar's port trade to The Reach's
+                  silver to Winterhold's arcane components, the map is wired
+                  for commerce, rivalry, and slow political pressure. Staff
+                  seed the leadership. The players run everything else.
+                </p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- LIVING CODEBASE                                  -->
+      <!-- ================================================ -->
+      <section id="codebase" class="codebase">
+        <div class="container-default">
+          <div class="codebase-head">
+            <div class="eyebrow metallic">currently being written</div>
+            <div class="rule" aria-hidden="true">
+              <span class="rule-glyph metallic">✦</span>
+            </div>
+            <h2>A living codebase</h2>
+            <p>
+              Every commit below is a piece of the server as it is being
+              built, pulled live from the open repository. A fresh timestamp
+              means we were writing this yesterday.
+            </p>
+          </div>
+
+          <div
+            class="commits"
+            role="region"
+            aria-label="Recent commits across Frostfall repositories"
+          >
+            <div class="commits-head">
+              <div class="commits-tabs" role="tablist" aria-label="Repository">
+                <button class="commits-tab" role="tab" aria-selected="false"
+                  data-repo="F02K/Frostfall-Launcher">Launcher</button>
+                <button class="commits-tab" role="tab" aria-selected="false"
+                  data-repo="F02K/Frostfall-Backend">Backend</button>
+                <button class="commits-tab" role="tab" aria-selected="false"
+                  data-repo="F02K/Frostfall-Server">Server</button>
+                <button class="commits-tab" role="tab" aria-selected="false"
+                  data-repo="F02K/Frostfall-Client">Client</button>
+                <button class="commits-tab" role="tab" aria-selected="false"
+                  data-repo="F02K/skymp">skymp</button>
+              </div>
+              <span class="commits-pulse">
+                <span class="commits-pulse-dot" aria-hidden="true"></span>
+                live
+              </span>
+            </div>
+            <ul
+              class="commits-list"
+              id="commits-list"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <li class="commit-loading">Fetching recent commits&hellip;</li>
+            </ul>
+          </div>
+
+          <div class="codebase-cta">
+            <a
+              id="commits-browse-btn"
+              href="https://github.com/F02K/Frostfall-Launcher"
+              class="btn btn-ghost"
+              target="_blank"
+              rel="noopener"
+              >Browse the repository</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ -->
+      <!-- JOIN — Discord CTA + live widget                 -->
+      <!-- ================================================ -->
+      <section class="join">
+        <div class="container-narrow join-head">
+          <div class="eyebrow metallic">where it's happening</div>
+          <div class="rule" aria-hidden="true">
+            <span class="rule-glyph metallic">✦</span>
+          </div>
+          <h2>Come watch it <em>get built</em>.</h2>
+          <p>
+            The work is the story right now. Join the Discord to follow the
+            build, ask questions, and be there when the gates open.
+          </p>
+          <a
+            href="https://discord.gg/4KHMqUUKNT"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener"
+            >Join the Discord</a
+          >
+        </div>
+
+        <div class="join-widget" aria-label="Frostfall Discord server widget">
+          <div class="discord-card">
+            <div class="discord-card-banner"></div>
+            <div class="discord-card-body">
+              <img
+                class="discord-card-icon"
+                src="https://cdn.discordapp.com/icons/1494021755210039387/a_73056187bd826c3af45c5fa15f9dd0b5.gif"
+                alt="Frostfall server icon"
+              />
+              <h3 class="discord-card-name">Frostfall: Skyrim SE Roleplay</h3>
+              <div class="discord-card-counts">
+                <span class="discord-card-online">
+                  <span class="discord-dot discord-dot-online" aria-hidden="true"></span>
+                  <span id="discord-online">...</span> Online
+                </span>
+                <span class="discord-card-members">
+                  <span class="discord-dot discord-dot-offline" aria-hidden="true"></span>
+                  <span id="discord-members">...</span> Members
+                </span>
+              </div>
+              <p class="discord-card-desc">The Official server of Frostfall: Skyrim SE Roleplay, a server with zero NPC's, focus on narrative, and an entirely player-driven economy and politics &mdash; step back into Tamriel, and the province of Skyrim, in the year of 4E 191, and watch the storm clouds gather on the horizon...</p>
+              <a
+                href="https://discord.gg/4KHMqUUKNT"
+                class="btn btn-primary discord-card-btn"
+                target="_blank"
+                rel="noopener"
+              >Join Server</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================================================ -->
+    <!-- FOOTER                                           -->
+    <!-- ================================================ -->
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-col">
+          <h4>Frostfall: Skyrim SE Roleplay</h4>
+          <p>
+            A SkyMP-powered, fully open-source Elder Scrolls V roleplay
+            server. Set ten years before the events of Skyrim. Staff seed the
+            world. Players run it.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li>
+              <a
+                href="https://discord.gg/4KHMqUUKNT"
+                target="_blank"
+                rel="noopener"
+                >Discord</a
+              >
+            </li>
+            <li><a href="#what">What this is</a></li>
+            <li><a href="#vision">Our vision</a></li>
+            <li><a href="#lore">The world in 4E 191</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Source</h4>
+          <ul>
+            <li>
+              <a
+                href="https://github.com/F02K/Frostfall-Launcher"
+                target="_blank"
+                rel="noopener"
+                >Frostfall-Launcher</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/F02K/Frostfall-Backend"
+                target="_blank"
+                rel="noopener"
+                >Frostfall-Backend</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/F02K/Frostfall-Server"
+                target="_blank"
+                rel="noopener"
+                >Frostfall-Server</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/F02K/Frostfall-Client"
+                target="_blank"
+                rel="noopener"
+                >Frostfall-Client</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/F02K/skymp"
+                target="_blank"
+                rel="noopener"
+                >skymp (F02K fork)</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="container footer-base">
+        <span
+          >&copy; 2026 Frostfall Roleplay · Content is in-character
+          texture. Bethesda holds the keys to Tamriel.</span
+        >
+        <span>frostfall.online</span>
+      </div>
+    </footer>
+
+    <!-- ================================================ -->
+    <!-- SCRIPTS                                          -->
+    <!-- ================================================ -->
+    <script src="theme-toggle.js" defer></script>
+    <script src="commits.js" defer></script>
+    <script src="discord-widget.js" defer></script>
+</body>
+</html>

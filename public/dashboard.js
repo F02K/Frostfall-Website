@@ -1,27 +1,45 @@
-/* ── Frostfall Admin Dashboard ──────────────────────────────────────────────── */
+/* ── Frostfall Staff Dashboard ───────────────────────────────────────────────── */
 ;(function () {
   'use strict'
 
-  const BACKEND   = window.__BACKEND_URL__ || 'http://localhost:4000'
-  const TOKEN_KEY = 'ff_dash_token'
+  // These are injected server-side by dashboard.ejs (only when logged in)
+  const BACKEND = window.__BACKEND_URL__ || 'https://api.frostfall.online'
+  const TOKEN   = window.__DASH_TOKEN__  || ''
 
-  let token       = null
-  let currentPath = '.'
-  let editorPath  = null
-  let logTimer    = null
-  let statusTimer = null
+  let currentPath    = '.'
+  let editorPath     = null
+  let logTimer       = null
+  let statusTimer    = null
+
+  let currentLoreEntries = []
+  let currentRules       = []
+  let currentWhitelist   = []
+  let loreEditingId      = null
+  let rulesEditingId     = null
+  let notesContent       = ''
+
+  let loreEditorInst  = null
+  let ruleEditorInst  = null
+  let notesEditorInst = null
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   function $(id) { return document.getElementById(id) }
 
+  // Calls backend /api/admin/* (server control, files, logs)
   function api(method, path, body) {
     return fetch(BACKEND + '/api/admin' + path, {
       method,
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type':  'application/json',
-      },
+      headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    }).then(r => r.json())
+  }
+
+  // Calls other backend endpoints (lore, rules, whitelist-notes)
+  function backendApi(method, path, body) {
+    return fetch(BACKEND + path, {
+      method,
+      headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined,
     }).then(r => r.json())
   }
@@ -33,128 +51,153 @@
     return (n / 1048576).toFixed(1) + ' MB'
   }
 
-  function formatTs(ts) {
-    if (!ts) return ''
-    return new Date(ts).toLocaleTimeString()
-  }
+  function formatTs(ts) { return ts ? new Date(ts).toLocaleTimeString() : '' }
 
   function esc(s) {
-    return String(s).replace(/'/g, "\\'").replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   }
 
-  function isDisconnected(res) {
-    return !res || res.error === 'admin service unreachable'
+  function escAttr(s) {
+    return String(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;')
   }
 
-  // ── Tabs ───────────────────────────────────────────────────────────────────
+  function isDisconnected(res) { return !res || res.error === 'admin service unreachable' }
 
-  document.querySelectorAll('.dash-tab').forEach(tab => {
-    tab.addEventListener('click', () => switchTab(tab.dataset.tab))
-  })
+  // ── Markdown editor factory ────────────────────────────────────────────────
 
-  function switchTab(name) {
-    document.querySelectorAll('.dash-tab').forEach(t => {
-      t.classList.toggle('is-active', t.dataset.tab === name)
-      t.setAttribute('aria-selected', t.dataset.tab === name)
+  function makeEditor(mountId, initialValue) {
+    const mount = $(mountId)
+    if (!mount) return { getValue: () => '', setValue: () => {} }
+
+    mount.innerHTML = ''
+
+    const toolbar = document.createElement('div')
+    toolbar.className = 'dash-ed-toolbar'
+    toolbar.innerHTML =
+      '<button type="button" class="dash-ed-btn" data-wrap="**" title="Bold"><strong>B</strong></button>' +
+      '<button type="button" class="dash-ed-btn dash-ed-btn--italic" data-wrap="*" title="Italic"><em>I</em></button>' +
+      '<button type="button" class="dash-ed-btn" data-prefix="## " title="Heading">H2</button>' +
+      '<button type="button" class="dash-ed-btn" data-prefix="- " title="Bullet">•</button>' +
+      '<span class="dash-ed-sep"></span>' +
+      '<button type="button" class="dash-ed-toggle is-active" data-mode="write">Write</button>' +
+      '<button type="button" class="dash-ed-toggle" data-mode="preview">Preview</button>'
+
+    const textarea = document.createElement('textarea')
+    textarea.className   = 'dash-ed-textarea'
+    textarea.spellcheck  = false
+    textarea.placeholder = 'Write in Markdown…'
+    textarea.value       = initialValue || ''
+
+    const preview = document.createElement('div')
+    preview.className = 'dash-ed-preview hidden'
+
+    mount.appendChild(toolbar)
+    mount.appendChild(textarea)
+    mount.appendChild(preview)
+
+    toolbar.querySelectorAll('[data-wrap]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wrap  = btn.dataset.wrap
+        const start = textarea.selectionStart
+        const end   = textarea.selectionEnd
+        const sel   = textarea.value.slice(start, end) || 'text'
+        textarea.setRangeText(wrap + sel + wrap, start, end, 'end')
+        textarea.focus()
+      })
     })
-    document.querySelectorAll('.dash-panel').forEach(p => {
-      p.classList.toggle('hidden', p.id !== 'panel-' + name)
+
+    toolbar.querySelectorAll('[data-prefix]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const prefix    = btn.dataset.prefix
+        const start     = textarea.selectionStart
+        const lineStart = textarea.value.lastIndexOf('\n', start - 1) + 1
+        textarea.setRangeText(prefix, lineStart, lineStart, 'end')
+        textarea.focus()
+      })
+    })
+
+    toolbar.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode
+        toolbar.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('is-active', b === btn))
+        if (mode === 'preview') {
+          preview.innerHTML = window.marked
+            ? window.marked.parse(textarea.value || '')
+            : '<pre>' + esc(textarea.value) + '</pre>'
+          textarea.classList.add('hidden')
+          preview.classList.remove('hidden')
+        } else {
+          preview.classList.add('hidden')
+          textarea.classList.remove('hidden')
+          textarea.focus()
+        }
+      })
+    })
+
+    return {
+      getValue: () => textarea.value,
+      setValue: v => {
+        textarea.value = v || ''
+        const writeBtn = toolbar.querySelector('[data-mode="write"]')
+        if (writeBtn && !writeBtn.classList.contains('is-active')) writeBtn.click()
+      },
+    }
+  }
+
+  // ── View switching ─────────────────────────────────────────────────────────
+
+  document.querySelectorAll('.dash-nav-item').forEach(item => {
+    item.addEventListener('click', () => switchView(item.dataset.view))
+  })
+
+  function switchView(name) {
+    document.querySelectorAll('.dash-nav-item').forEach(item => {
+      item.classList.toggle('is-active', item.dataset.view === name)
+    })
+    document.querySelectorAll('.dash-view').forEach(view => {
+      view.classList.toggle('hidden', view.id !== 'view-' + name)
+    })
+    if (name === 'lore')  loadLoreView()
+    if (name === 'rules') loadRulesView()
+    if (name === 'whitelist') loadWhitelistView()
+  }
+
+  // ── Inner tab switching (Server view) ─────────────────────────────────────
+
+  document.querySelectorAll('.dash-inner-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchInnerTab(tab.dataset.inner))
+  })
+
+  function switchInnerTab(name) {
+    document.querySelectorAll('.dash-inner-tab').forEach(tab => {
+      tab.classList.toggle('is-active', tab.dataset.inner === name)
+      tab.setAttribute('aria-selected', String(tab.dataset.inner === name))
+    })
+    document.querySelectorAll('.dash-inner-panel').forEach(panel => {
+      panel.classList.toggle('hidden', panel.id !== 'inner-' + name)
     })
   }
 
-  // ── Auth gate ──────────────────────────────────────────────────────────────
+  // ── Status ─────────────────────────────────────────────────────────────────
 
-  function showAuth()      { $('auth-gate').classList.remove('hidden') }
-  function showDashboard() {
-    $('auth-gate').classList.add('hidden')
-    $('dashboard').classList.remove('hidden')
-  }
-
-  async function tryToken(t) {
-    token = t
-    try {
-      const res = await fetch(BACKEND + '/auth/dashboard/me', {
-        headers: { 'Authorization': 'Bearer ' + t },
-      }).then(r => r.json())
-      if (!res.ok || !res.user) { token = null; return null }
-      return res.user
-    } catch {
-      token = null
-      return null
-    }
-  }
-
-  $('discord-login-btn').addEventListener('click', async () => {
-    const btn = $('discord-login-btn')
-    btn.disabled = true
-    btn.textContent = '…'
-    $('auth-error').classList.add('hidden')
-    try {
-      const redirectBack = window.location.href.split('?')[0]
-      const res = await fetch(
-        BACKEND + '/auth/dashboard/url?redirect=' + encodeURIComponent(redirectBack)
-      ).then(r => r.json())
-      if (res.error) throw new Error(res.error)
-      window.location.href = res.url
-    } catch (err) {
-      $('auth-error').textContent = err.message || 'Could not reach auth service.'
-      $('auth-error').classList.remove('hidden')
-      btn.disabled = false
-      btn.innerHTML =
-        '<svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
-        '<path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>' +
-        '</svg>Sign in with Discord'
-    }
-  })
-
-  $('logout-btn').addEventListener('click', async () => {
-    if (token) {
-      await fetch(BACKEND + '/auth/dashboard/logout', {
-        method:  'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
-      }).catch(() => {})
-    }
-    sessionStorage.removeItem(TOKEN_KEY)
-    token = null
-    clearInterval(logTimer)
-    clearInterval(statusTimer)
-    $('dashboard').classList.add('hidden')
-    showAuth()
-  })
-
-  function setUserInfo(user) {
-    if (!user) return
-    const avatar = $('dash-avatar')
-    if (user.avatar) { avatar.src = user.avatar; avatar.hidden = false }
-    $('dash-username').textContent = user.username || ''
-  }
-
-  // ── Status helpers ─────────────────────────────────────────────────────────
-
-  // Apply a state class to all status dots and the ring
   function applyStatusState(state, labelText, metaText) {
     const states = ['running', 'stopped', 'disconnected', 'checking']
-
-    ;[$('status-dot'), $('status-dot-lg')].forEach(el => {
+    ;[$('status-dot-lg'), $('nav-status-dot')].forEach(el => {
       if (!el) return
       states.forEach(s => el.classList.remove(s))
       el.classList.add(state)
     })
-
-    const ring = document.getElementById('status-ring')
+    const ring = $('status-ring')
     if (ring) {
       states.forEach(s => ring.classList.remove(s))
       ring.classList.add(state)
     }
-
-    if (labelText !== undefined) {
-      ;[$('status-label'), $('status-label-chip')].forEach(el => {
-        if (el) el.textContent = labelText
-      })
-    }
-    if (metaText !== undefined && $('server-meta')) {
+    if (labelText !== undefined && $('status-label'))
+      $('status-label').textContent = labelText
+    if (metaText !== undefined && $('server-meta'))
       $('server-meta').textContent = metaText
-    }
   }
 
   function setControlsDisabled(disabled) {
@@ -168,23 +211,16 @@
 
   async function refreshStatus() {
     applyStatusState('checking', '…', '')
-
     const res = await api('GET', '/server/status').catch(() => null)
-
     if (isDisconnected(res)) {
       applyStatusState('disconnected', 'Not connected', '')
       setControlsDisabled(true)
       return
     }
-
     setControlsDisabled(false)
-
     if (res.running) {
-      applyStatusState(
-        'running',
-        'Running',
-        'PID ' + res.pid + ' · started ' + formatTs(res.startedAt) + ' · ' + res.cmd
-      )
+      applyStatusState('running', 'Running',
+        'PID ' + res.pid + ' · started ' + formatTs(res.startedAt) + ' · ' + res.cmd)
     } else {
       applyStatusState('stopped', 'Stopped', res.cmd || '')
     }
@@ -193,14 +229,12 @@
   async function serverAction(action) {
     const btn  = $('btn-' + action)
     const orig = btn.textContent
-    btn.disabled = true
-    btn.textContent = '…'
+    btn.disabled = true; btn.textContent = '…'
     try {
       await api('POST', '/server/' + action)
       await refreshStatus()
     } finally {
-      btn.disabled = false
-      btn.textContent = orig
+      btn.disabled = false; btn.textContent = orig
     }
   }
 
@@ -210,25 +244,19 @@
 
   async function refreshLogs() {
     const el  = $('log-output')
+    if (!el) return
     const res = await api('GET', '/server/logs?limit=200').catch(() => null)
-
-    if (isDisconnected(res)) {
-      el.innerHTML = '<span class="log-faint">Server not connected.</span>'
-      return
-    }
+    if (isDisconnected(res)) { el.innerHTML = '<span class="log-faint">Server not connected.</span>'; return }
     if (!res || !res.logs) return
-
     const lines = res.logs.map(({ ts, line }) => {
       const time    = formatTs(ts)
-      const cls     = line.startsWith('[err]') ? 'log-err'
-                    : line.startsWith('---')   ? 'log-sep'
-                    : ''
+      const cls     = line.startsWith('[err]') ? 'log-err' : line.startsWith('---') ? 'log-sep' : ''
       const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       return `<span class="${cls}">[${time}] ${escaped}</span>`
     })
-
     el.innerHTML = lines.join('\n') || '<span class="log-faint">No logs yet.</span>'
-    if ($('log-follow').checked) el.scrollTop = el.scrollHeight
+    const follow = $('log-follow')
+    if (follow && follow.checked) el.scrollTop = el.scrollHeight
   }
 
   window.refreshLogs = refreshLogs
@@ -238,24 +266,13 @@
   async function loadDir(path) {
     currentPath = path
     renderBreadcrumb(path)
-
     const list = $('file-list')
+    if (!list) return
     list.innerHTML = '<div class="dash-file-empty">Loading…</div>'
-
     const res = await api('GET', '/files?path=' + encodeURIComponent(path)).catch(() => null)
-
-    if (isDisconnected(res)) {
-      list.innerHTML = '<div class="dash-file-empty">Server not connected.</div>'
-      return
-    }
-    if (!res || res.error) {
-      list.innerHTML = '<div class="dash-file-empty">' + (res?.error || 'Error loading directory') + '</div>'
-      return
-    }
-    if (!res.entries.length) {
-      list.innerHTML = '<div class="dash-file-empty">Empty directory.</div>'
-      return
-    }
+    if (isDisconnected(res)) { list.innerHTML = '<div class="dash-file-empty">Server not connected.</div>'; return }
+    if (!res || res.error)   { list.innerHTML = '<div class="dash-file-empty">' + esc(res?.error || 'Error') + '</div>'; return }
+    if (!res.entries.length) { list.innerHTML = '<div class="dash-file-empty">Empty directory.</div>'; return }
 
     const entries = [...res.entries].sort((a, b) => {
       if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
@@ -263,11 +280,11 @@
     })
 
     list.innerHTML = entries.map(e => {
-      const fullPath = (path === '.' ? '' : path + '/') + e.name
-      const nameBtn  = e.type === 'dir'
-        ? `<button class="dash-file-name is-dir" onclick="loadDir('${esc(fullPath)}')">${esc(e.name)}/</button>`
-        : `<button class="dash-file-name" onclick="openEditor('${esc(fullPath)}')">${esc(e.name)}</button>`
-      const delBtn = `<button class="dash-file-del" title="Delete" onclick="deleteFile('${esc(fullPath)}')">✕</button>`
+      const fp      = (path === '.' ? '' : path + '/') + e.name
+      const nameBtn = e.type === 'dir'
+        ? `<button class="dash-file-name is-dir" onclick="loadDir('${escAttr(fp)}')">${esc(e.name)}/</button>`
+        : `<button class="dash-file-name" onclick="openEditor('${escAttr(fp)}')">${esc(e.name)}</button>`
+      const delBtn = `<button class="dash-file-del" title="Delete" onclick="deleteFile('${escAttr(fp)}')">✕</button>`
       return `<div class="dash-file-row">
         <span class="dash-file-icon">${e.type === 'dir' ? '📁' : '📄'}</span>
         ${nameBtn}
@@ -279,13 +296,13 @@
 
   function renderBreadcrumb(path) {
     const bc    = $('breadcrumb')
+    if (!bc) return
     const parts = path === '.' ? [] : path.split('/')
     let html    = `<button class="dash-bc-btn" onclick="loadDir('.')">root</button>`
     let built   = ''
     for (const p of parts) {
       built = built ? built + '/' + p : p
-      const b = built
-      html += `<span class="dash-bc-sep">/</span><button class="dash-bc-btn" onclick="loadDir('${esc(b)}')">${esc(p)}</button>`
+      html += `<span class="dash-bc-sep">/</span><button class="dash-bc-btn" onclick="loadDir('${escAttr(built)}')">${esc(p)}</button>`
     }
     bc.innerHTML = html
   }
@@ -302,30 +319,32 @@
 
   // ── Upload ─────────────────────────────────────────────────────────────────
 
-  $('upload-input').addEventListener('change', async e => {
-    const files = Array.from(e.target.files)
-    if (!files.length) return
-    for (const file of files) {
-      const fd = new FormData()
-      fd.append('file', file)
-      await fetch(BACKEND + '/api/admin/files/upload?path=' + encodeURIComponent(currentPath), {
-        method:  'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
-        body:    fd,
-      })
-    }
-    e.target.value = ''
-    loadDir(currentPath)
-  })
+  const uploadInput = $('upload-input')
+  if (uploadInput) {
+    uploadInput.addEventListener('change', async e => {
+      const files = Array.from(e.target.files)
+      if (!files.length) return
+      for (const file of files) {
+        const fd = new FormData()
+        fd.append('file', file)
+        await fetch(BACKEND + '/api/admin/files/upload?path=' + encodeURIComponent(currentPath), {
+          method:  'POST',
+          headers: { Authorization: 'Bearer ' + TOKEN },
+          body:    fd,
+        })
+      }
+      e.target.value = ''
+      loadDir(currentPath)
+    })
+  }
 
-  // ── Editor ─────────────────────────────────────────────────────────────────
+  // ── Raw file editor ────────────────────────────────────────────────────────
 
   async function openEditor(path) {
     const res = await api('GET', '/files/content?path=' + encodeURIComponent(path)).catch(() => null)
     if (isDisconnected(res)) return alert('Server not connected.')
     if (!res || res.error)   return alert('Cannot read file: ' + (res?.error || 'unknown error'))
     if (res.encoding === 'base64') return alert('Binary files cannot be edited in the browser.')
-
     editorPath = path
     $('editor-title').textContent = path
     $('editor-area').value = res.content
@@ -335,17 +354,12 @@
 
   window.openEditor = openEditor
 
-  function closeEditor() {
-    $('editor-backdrop').classList.add('hidden')
-    editorPath = null
-  }
-
+  function closeEditor() { $('editor-backdrop').classList.add('hidden'); editorPath = null }
   window.closeEditor = closeEditor
 
   async function saveFile() {
     if (!editorPath) return
-    const content = $('editor-area').value
-    const res = await api('PUT', '/files/content', { path: editorPath, content, encoding: 'utf8' }).catch(() => null)
+    const res = await api('PUT', '/files/content', { path: editorPath, content: $('editor-area').value, encoding: 'utf8' }).catch(() => null)
     if (isDisconnected(res)) return alert('Server not connected.')
     if (!res || res.error)   return alert('Save failed: ' + (res?.error || 'unknown error'))
     closeEditor()
@@ -353,70 +367,331 @@
 
   window.saveFile = saveFile
 
-  $('editor-backdrop').addEventListener('click', e => {
-    if (e.target === $('editor-backdrop')) closeEditor()
-  })
+  const editorBackdrop = $('editor-backdrop')
+  if (editorBackdrop) {
+    editorBackdrop.addEventListener('click', e => { if (e.target === editorBackdrop) closeEditor() })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // LORE VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function loadLoreView() {
+    const list = $('dash-lore-list')
+    if (!list) return
+    list.innerHTML = '<div class="dash-file-empty">Loading…</div>'
+    try {
+      const entries = await backendApi('GET', '/api/lore')
+      currentLoreEntries = Array.isArray(entries) ? entries : []
+      renderLoreList()
+    } catch {
+      list.innerHTML = '<div class="dash-file-empty">Failed to load lore entries.</div>'
+    }
+  }
+
+  function renderLoreList() {
+    const list = $('dash-lore-list')
+    if (!list) return
+    if (!currentLoreEntries.length) {
+      list.innerHTML = '<div class="dash-file-empty">No lore entries yet. Create one to get started.</div>'
+      return
+    }
+    const total = currentLoreEntries.length
+    list.innerHTML = currentLoreEntries.map((e, i) => `
+      <div class="dash-file-row" data-id="${escAttr(e.id)}">
+        <span class="dash-file-icon">📜</span>
+        <button class="dash-file-name" onclick="loreDashEdit('${escAttr(e.id)}')">${esc(e.title)}</button>
+        <span class="dash-file-size">${esc(e.category || 'general')}</span>
+        <div class="dash-file-actions">
+          <button class="dash-btn dash-btn-ghost dash-btn-sm" onclick="loreMove('${escAttr(e.id)}',-1)" ${i === 0 ? 'disabled' : ''} title="Move up">↑</button>
+          <button class="dash-btn dash-btn-ghost dash-btn-sm" onclick="loreMove('${escAttr(e.id)}',1)"  ${i === total - 1 ? 'disabled' : ''} title="Move down">↓</button>
+          <button class="dash-file-del" title="Delete" onclick="loreDashDelete('${escAttr(e.id)}','${escAttr(e.title)}')">✕</button>
+        </div>
+      </div>`).join('')
+  }
+
+  window.loreMove = async function (id, dir) {
+    const idx = currentLoreEntries.findIndex(e => e.id === id)
+    if (idx < 0) return
+    const swapIdx = idx + dir
+    if (swapIdx < 0 || swapIdx >= currentLoreEntries.length) return
+    ;[currentLoreEntries[idx], currentLoreEntries[swapIdx]] = [currentLoreEntries[swapIdx], currentLoreEntries[idx]]
+    renderLoreList()
+    try { await backendApi('PUT', '/api/lore/reorder', { ids: currentLoreEntries.map(e => e.id) }) } catch {}
+  }
+
+  function loreNewEntry() {
+    loreEditingId = null
+    $('lore-entry-modal-title').textContent = 'New Lore Entry'
+    $('lore-entry-title').value    = ''
+    $('lore-entry-category').value = ''
+    loreEditorInst = makeEditor('lore-editor-mount', '')
+    $('lore-entry-backdrop').classList.remove('hidden')
+    $('lore-entry-title').focus()
+  }
+
+  window.loreNewEntry = loreNewEntry
+
+  window.loreDashEdit = async function (id) {
+    try {
+      const entry = await backendApi('GET', '/api/lore/' + id)
+      loreEditingId = id
+      $('lore-entry-modal-title').textContent = 'Edit Lore Entry'
+      $('lore-entry-title').value    = entry.title    || ''
+      $('lore-entry-category').value = entry.category || ''
+      loreEditorInst = makeEditor('lore-editor-mount', entry.content || '')
+      $('lore-entry-backdrop').classList.remove('hidden')
+      $('lore-entry-title').focus()
+    } catch { alert('Could not load entry.') }
+  }
+
+  window.loreDashDelete = async function (id, title) {
+    if (!confirm('Delete "' + title + '"?')) return
+    try { await backendApi('DELETE', '/api/lore/' + id); loadLoreView() }
+    catch { alert('Delete failed.') }
+  }
+
+  function closeLoreEntryModal() {
+    $('lore-entry-backdrop').classList.add('hidden')
+    loreEditingId = null; loreEditorInst = null
+  }
+
+  async function saveLoreEntry() {
+    const title    = $('lore-entry-title').value.trim()
+    const category = $('lore-entry-category').value.trim()
+    const content  = loreEditorInst ? loreEditorInst.getValue().trim() : ''
+    if (!title || !content) { alert('Title and content are required.'); return }
+    const btn = $('lore-save-btn')
+    btn.disabled = true; btn.textContent = '…'
+    try {
+      if (loreEditingId) await backendApi('PUT',  '/api/lore/' + loreEditingId, { title, category, content })
+      else               await backendApi('POST', '/api/lore',                  { title, category, content })
+      closeLoreEntryModal(); loadLoreView()
+    } catch { alert('Save failed.') }
+    finally { btn.disabled = false; btn.textContent = 'Save' }
+  }
+
+  window.closeLoreEntryModal = closeLoreEntryModal
+  window.saveLoreEntry       = saveLoreEntry
+
+  const loreBackdrop = $('lore-entry-backdrop')
+  if (loreBackdrop) loreBackdrop.addEventListener('click', e => { if (e.target === loreBackdrop) closeLoreEntryModal() })
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // RULES VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function loadRulesView() {
+    const list = $('dash-rules-list')
+    if (!list) return
+    list.innerHTML = '<div class="dash-file-empty">Loading…</div>'
+    try {
+      const rules = await backendApi('GET', '/api/rules')
+      currentRules = Array.isArray(rules) ? rules : []
+      renderRulesList()
+    } catch {
+      list.innerHTML = '<div class="dash-file-empty">Failed to load rules.</div>'
+    }
+  }
+
+  function renderRulesList() {
+    const list = $('dash-rules-list')
+    if (!list) return
+    if (!currentRules.length) {
+      list.innerHTML = '<div class="dash-file-empty">No rules yet. Create one to get started.</div>'
+      return
+    }
+    const total = currentRules.length
+    list.innerHTML = currentRules.map((r, i) => `
+      <div class="dash-file-row" data-id="${escAttr(r.id)}">
+        <span class="dash-file-icon" style="font-family:var(--font-mono);font-size:.75rem;color:var(--color-gold)">${r.order || i + 1}</span>
+        <button class="dash-file-name" onclick="rulesDashEdit('${escAttr(r.id)}')">${esc(r.title)}</button>
+        <span class="dash-file-size"></span>
+        <div class="dash-file-actions">
+          <button class="dash-btn dash-btn-ghost dash-btn-sm" onclick="ruleMove('${escAttr(r.id)}',-1)" ${i === 0 ? 'disabled' : ''} title="Move up">↑</button>
+          <button class="dash-btn dash-btn-ghost dash-btn-sm" onclick="ruleMove('${escAttr(r.id)}',1)"  ${i === total - 1 ? 'disabled' : ''} title="Move down">↓</button>
+          <button class="dash-file-del" title="Delete" onclick="rulesDashDelete('${escAttr(r.id)}','${escAttr(r.title)}')">✕</button>
+        </div>
+      </div>`).join('')
+  }
+
+  window.ruleMove = async function (id, dir) {
+    const idx = currentRules.findIndex(r => r.id === id)
+    if (idx < 0) return
+    const swapIdx = idx + dir
+    if (swapIdx < 0 || swapIdx >= currentRules.length) return
+    ;[currentRules[idx], currentRules[swapIdx]] = [currentRules[swapIdx], currentRules[idx]]
+    currentRules.forEach((r, i) => { r.order = i + 1 })
+    renderRulesList()
+    try { await backendApi('PUT', '/api/rules/reorder', { ids: currentRules.map(r => r.id) }) } catch {}
+  }
+
+  function rulesNewEntry() {
+    rulesEditingId = null
+    $('rule-entry-modal-title').textContent = 'New Rule'
+    $('rule-entry-title').value = ''
+    ruleEditorInst = makeEditor('rule-editor-mount', '')
+    $('rule-entry-backdrop').classList.remove('hidden')
+    $('rule-entry-title').focus()
+  }
+
+  window.rulesNewEntry = rulesNewEntry
+
+  window.rulesDashEdit = async function (id) {
+    try {
+      const rules = await backendApi('GET', '/api/rules')
+      const rule  = rules.find(r => r.id === id)
+      if (!rule) return
+      rulesEditingId = id
+      $('rule-entry-modal-title').textContent = 'Edit Rule'
+      $('rule-entry-title').value = rule.title || ''
+      ruleEditorInst = makeEditor('rule-editor-mount', rule.content || '')
+      $('rule-entry-backdrop').classList.remove('hidden')
+      $('rule-entry-title').focus()
+    } catch { alert('Could not load rule.') }
+  }
+
+  window.rulesDashDelete = async function (id, title) {
+    if (!confirm('Delete rule "' + title + '"?')) return
+    try { await backendApi('DELETE', '/api/rules/' + id); loadRulesView() }
+    catch { alert('Delete failed.') }
+  }
+
+  function closeRuleEntryModal() {
+    $('rule-entry-backdrop').classList.add('hidden')
+    rulesEditingId = null; ruleEditorInst = null
+  }
+
+  async function saveRuleEntry() {
+    const title   = $('rule-entry-title').value.trim()
+    const content = ruleEditorInst ? ruleEditorInst.getValue().trim() : ''
+    if (!title || !content) { alert('Title and content are required.'); return }
+    const btn = $('rule-save-btn')
+    btn.disabled = true; btn.textContent = '…'
+    try {
+      if (rulesEditingId) await backendApi('PUT',  '/api/rules/' + rulesEditingId, { title, content })
+      else                await backendApi('POST', '/api/rules',                   { title, content })
+      closeRuleEntryModal(); loadRulesView()
+    } catch { alert('Save failed.') }
+    finally { btn.disabled = false; btn.textContent = 'Save' }
+  }
+
+  window.closeRuleEntryModal = closeRuleEntryModal
+  window.saveRuleEntry       = saveRuleEntry
+
+  const ruleBackdrop = $('rule-entry-backdrop')
+  if (ruleBackdrop) ruleBackdrop.addEventListener('click', e => { if (e.target === ruleBackdrop) closeRuleEntryModal() })
+
+  // ── Staff notes ────────────────────────────────────────────────────────────
+
+  // WHITELIST VIEW
+
+  async function loadWhitelistView() {
+    const list = $('dash-whitelist-list')
+    const count = $('dash-whitelist-count')
+    if (!list) return
+
+    list.innerHTML = '<div class="dash-file-empty">Loading...</div>'
+    if (count) count.textContent = 'Loading...'
+
+    try {
+      const res = await backendApi('GET', '/api/whitelist')
+      currentWhitelist = Array.isArray(res.players) ? res.players : []
+      renderWhitelistList(res)
+    } catch {
+      currentWhitelist = []
+      list.innerHTML = '<div class="dash-file-empty">Failed to load whitelisted players.</div>'
+      if (count) count.textContent = ''
+    }
+
+    try {
+      const doc = await backendApi('GET', '/api/whitelist-notes')
+      notesContent = doc.content || ''
+      const notes = $('dash-notes-content')
+      if (notes) notes.textContent = notesContent || '(no notes yet)'
+    } catch {
+      const notes = $('dash-notes-content')
+      if (notes) notes.textContent = '(could not load notes)'
+    }
+  }
+
+  function renderWhitelistList(res) {
+    const list = $('dash-whitelist-list')
+    const count = $('dash-whitelist-count')
+    if (!list) return
+
+    if (count) {
+      const source = res && res.roleId ? 'Role ' + res.roleId : 'No role configured'
+      count.textContent = `${currentWhitelist.length} player${currentWhitelist.length === 1 ? '' : 's'} · ${source}`
+    }
+
+    if (!currentWhitelist.length) {
+      list.innerHTML = '<div class="dash-file-empty">' + esc(res?.message || 'No whitelisted players found.') + '</div>'
+      return
+    }
+
+    list.innerHTML = currentWhitelist.map(player => {
+      const avatar = player.avatar
+        ? `<img class="dash-player-avatar" src="${escAttr(player.avatar)}" alt="">`
+        : '<span class="dash-player-avatar dash-player-avatar--empty"></span>'
+      const joined = player.joinedAt ? new Date(player.joinedAt).toLocaleDateString() : 'Unknown join date'
+      return `<div class="dash-player-row">
+        ${avatar}
+        <div class="dash-player-main">
+          <span class="dash-player-name">${esc(player.displayName || player.username || player.discordId)}</span>
+          <span class="dash-player-sub">${esc(player.username || '')} · ${esc(player.discordId)}</span>
+        </div>
+        <div class="dash-player-future">
+          <span class="dash-player-pill">${esc(player.characterName || 'Character pending')}</span>
+          <span class="dash-player-pill">${esc(player.racePreset || 'Race preset pending')}</span>
+        </div>
+        <span class="dash-file-size">${esc(joined)}</span>
+      </div>`
+    }).join('')
+  }
+
+  window.loadWhitelistView = loadWhitelistView
+
+  function rulesEditNotes() {
+    notesEditorInst = makeEditor('notes-editor-mount', notesContent)
+    $('notes-entry-backdrop').classList.remove('hidden')
+  }
+
+  function closeNotesEntryModal() { $('notes-entry-backdrop').classList.add('hidden'); notesEditorInst = null }
+
+  async function saveNotesEntry() {
+    const content = notesEditorInst ? notesEditorInst.getValue() : ''
+    const btn     = $('notes-save-btn')
+    btn.disabled = true; btn.textContent = '…'
+    try {
+      const doc = await backendApi('PUT', '/api/whitelist-notes', { content })
+      notesContent = doc.content || ''
+      $('dash-notes-content').textContent = notesContent || '(no notes yet)'
+      closeNotesEntryModal()
+    } catch { alert('Save failed.') }
+    finally { btn.disabled = false; btn.textContent = 'Save' }
+  }
+
+  window.rulesEditNotes       = rulesEditNotes
+  window.closeNotesEntryModal = closeNotesEntryModal
+  window.saveNotesEntry       = saveNotesEntry
+
+  const notesBackdrop = $('notes-entry-backdrop')
+  if (notesBackdrop) notesBackdrop.addEventListener('click', e => { if (e.target === notesBackdrop) closeNotesEntryModal() })
 
   // ── Init ───────────────────────────────────────────────────────────────────
 
-  function init(user) {
-    setUserInfo(user)
-    showDashboard()
+  // Switch to first nav item that was rendered (determined by permissions server-side)
+  const firstNav = document.querySelector('.dash-nav-item')
+  if (firstNav) switchView(firstNav.dataset.view)
+
+  // Start server polling only if the server view was rendered
+  if ($('view-server')) {
     refreshStatus()
     refreshLogs()
     loadDir('.')
-
-    clearInterval(statusTimer)
-    clearInterval(logTimer)
     statusTimer = setInterval(refreshStatus, 5000)
     logTimer    = setInterval(refreshLogs,   4000)
   }
-
-  // ── Boot ───────────────────────────────────────────────────────────────────
-
-  ;(async function boot() {
-    const params   = new URLSearchParams(window.location.search)
-    const urlToken = params.get('token')
-    const urlError = params.get('error')
-
-    if (urlError) {
-      history.replaceState({}, '', window.location.pathname)
-      const msgs = {
-        cancelled:    'Discord login was cancelled.',
-        unauthorized: 'Your Discord account is not authorised for this dashboard.',
-        expired:      'Login session expired. Please try again.',
-        server_error: 'A server error occurred. Please try again.',
-      }
-      $('auth-error').textContent = msgs[urlError] || 'Login failed: ' + urlError
-      $('auth-error').classList.remove('hidden')
-      showAuth()
-      return
-    }
-
-    if (urlToken) {
-      history.replaceState({}, '', window.location.pathname)
-      const user = await tryToken(urlToken)
-      if (user) {
-        sessionStorage.setItem(TOKEN_KEY, urlToken)
-        init(user)
-        return
-      }
-      $('auth-error').textContent = 'Invalid or expired session token.'
-      $('auth-error').classList.remove('hidden')
-      showAuth()
-      return
-    }
-
-    const saved = sessionStorage.getItem(TOKEN_KEY)
-    if (saved) {
-      const user = await tryToken(saved)
-      if (user) { init(user); return }
-      sessionStorage.removeItem(TOKEN_KEY)
-    }
-
-    showAuth()
-  })()
-
-  $('auth-gate').classList.remove('hidden')
 
 }())

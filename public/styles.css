@@ -1600,3 +1600,57 @@ section {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ============================================================
+   WIKI PORTAL (index.ejs — links to /lore and /rules)
+   ============================================================ */
+.wiki-portal {
+  padding: clamp(3rem, 7vw, 5rem) 0;
+}
+
+.wiki-portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1.5rem;
+}
+
+.wiki-portal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  background: var(--surface-raised, rgba(255,255,255,0.02));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.wiki-portal-card:hover {
+  border-color: var(--color-gold, #c9a84c);
+  background: rgba(201,168,76,0.04);
+}
+
+.wiki-portal-card-title {
+  font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+  font-size: clamp(1.3rem, 2.5vw, 1.65rem);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text, inherit);
+}
+
+.wiki-portal-card-desc {
+  margin: 0;
+  color: var(--color-text-muted, rgba(255,255,255,0.6));
+  font-size: 0.975rem;
+  line-height: 1.65;
+  flex: 1;
+}
+
+.wiki-portal-card-link {
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--color-gold, #c9a84c);
+  margin-top: 0.25rem;
+}

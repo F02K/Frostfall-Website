@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rules — Frostfall: Skyrim SE Roleplay</title>
+    <meta name="description" content="The roleplay and server rules of Frostfall." />
+    <link rel="icon" href="assets/logo-static.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="rules.css" />
+  </head>
+  <body>
+    <%- include('partials/topbar', { page: 'rules' }) %>
+
+    <main>
+      <div class="container-default">
+        <div class="rules-page-hero">
+          <div class="eyebrow metallic">roleplay &amp; conduct</div>
+          <h1 class="rules-page-title">Server Rules</h1>
+          <p class="rules-page-sub">Read these before you play. These rules exist to protect the quality of roleplay for everyone.</p>
+        </div>
+
+        <!-- Rules list rendered here -->
+        <div id="rules-content">
+          <div class="rules-empty">Loading…</div>
+        </div>
+
+        <!-- Staff-only: whitelist notes — visible only to logged-in staff -->
+        <div class="rules-staff-section hidden" id="staff-section">
+          <div class="rules-staff-head">
+            <h2 class="rules-staff-title">Staff: Whitelist Handling</h2>
+          </div>
+          <div class="rules-staff-notes" id="staff-notes-content">
+            <span class="rules-staff-empty">No notes yet.</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>window.__BACKEND_URL__ = '<%= backendUrl %>'</script>
+    <script src="/rules.js"></script>
+    <script src="/theme-toggle.js"></script>
+  </body>
+</html>

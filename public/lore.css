@@ -1,0 +1,196 @@
+/* ── Lore wiki page ──────────────────────────────────────────────────────────── */
+
+.lore-page-hero {
+  padding: clamp(3rem, 8vw, 6rem) 0 clamp(2rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.lore-page-hero .eyebrow {
+  margin-bottom: 0.75rem;
+}
+
+.lore-page-title {
+  font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0 0 1rem;
+}
+
+.lore-page-sub {
+  color: var(--text-muted);
+  max-width: 52ch;
+  margin: 0 auto 2rem;
+  font-size: 1.05rem;
+}
+
+/* Staff toolbar shown when the user has lore.write */
+.lore-staff-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-raised, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 6px;
+  margin-bottom: 2rem;
+}
+
+.lore-staff-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Category heading */
+.lore-category-heading {
+  font-family: 'Cormorant SC', serif;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent, #c9a84c);
+  margin: 2.5rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+}
+
+/* Staff action buttons on each entry */
+.lore-entry-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.25rem 0.75rem;
+}
+
+/* Entry empty state */
+.lore-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 4rem 0;
+}
+
+.lore-empty p { margin: 0.4rem 0; }
+.lore-empty a { color: var(--accent, #c9a84c); }
+
+/* Modal */
+.lore-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.lore-modal {
+  background: var(--surface, #1a1a1a);
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: 8px;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.lore-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+  font-family: 'Cormorant SC', serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+}
+
+.lore-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+}
+
+.lore-modal-close:hover { color: var(--text); }
+
+.lore-modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+
+.lore-field label {
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.lore-field input,
+.lore-field textarea {
+  width: 100%;
+  background: var(--surface-raised, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: 4px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.lore-field input:focus,
+.lore-field textarea:focus {
+  outline: none;
+  border-color: var(--accent, #c9a84c);
+}
+
+.lore-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+}
+
+/* Small ghost / primary button reuse from dashboard.css equivalents */
+.lore-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+}
+.lore-btn:hover { opacity: 0.8; }
+.lore-btn-primary {
+  background: var(--accent, #c9a84c);
+  color: #000;
+  border-color: var(--accent, #c9a84c);
+}
+.lore-btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border, rgba(255,255,255,0.2));
+}
+.lore-btn-danger {
+  background: transparent;
+  color: #e05555;
+  border-color: #e05555;
+}
+.lore-btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}

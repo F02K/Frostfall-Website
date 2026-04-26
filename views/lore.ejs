@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lore — Frostfall: Skyrim SE Roleplay</title>
+    <meta name="description" content="The lore of Frostfall: a living wiki for the world of 4E 191." />
+    <link rel="icon" href="assets/logo-static.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="lore.css" />
+  </head>
+  <body>
+    <%- include('partials/topbar', { page: 'lore' }) %>
+
+    <main>
+      <div class="container-default">
+        <div class="lore-page-hero">
+          <div class="eyebrow metallic">the world, in living text</div>
+          <h1 class="lore-page-title">Lore Wiki</h1>
+          <p class="lore-page-sub">The canonical lore of Frostfall — 4E 191, ten years before the events of Skyrim. Maintained by the Lore Council.</p>
+        </div>
+
+        <!-- Lore entries rendered here -->
+        <div id="lore-content">
+          <div class="lore-empty">Loading…</div>
+        </div>
+      </div>
+    </main>
+
+    <script>window.__BACKEND_URL__ = '<%= backendUrl %>'</script>
+    <script src="/lore.js"></script>
+    <script src="/theme-toggle.js"></script>
+  </body>
+</html>
